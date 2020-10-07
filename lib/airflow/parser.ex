@@ -1,5 +1,10 @@
 defmodule Airflow.Parser do
 
+  def process_data(string, pid) do
+    result = parse(string)
+    Process.send(pid, {:parser, result}, [])
+  end
+
   def parse(string) do
     [_address, pressure, temperature, volumetric_flow, mass_flow, setpoint, gas] = String.split(string)
     %Airflow{pressure: String.to_float(pressure),

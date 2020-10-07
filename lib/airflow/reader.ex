@@ -49,13 +49,6 @@ defmodule Airflow.Reader do
     false
   end
 
-  def process_data(data, pid) do
-
-    IO.inspect data
-    # result = Parser.parse(data)
-    # Process.send(pid, {:parser, result}, [])
-  end
-
   def port, do: GenServer.call(__MODULE__, :port)
 
   def current_value, do: GenServer.call(__MODULE__, :current_value)
@@ -70,13 +63,12 @@ defmodule Airflow.Reader do
 
   def handle_info({:circuits_uart, port, data}, state) do
     if port == state[:port] do
-      Task.start(__MODULE__, :process_data, [data, self()])
+      Task.start(Parser, :process_data, [data, self()])
     end
     {:noreply, state}
   end
 
   def handle_info({:parser, result}, state) do
-    # Task.start(Airflow.Logger, :save, [result])
     {:noreply, Map.put(state, :result, result)}
   end
 
