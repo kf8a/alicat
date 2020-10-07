@@ -8,7 +8,7 @@ defmodule Airflow.Application do
   def start(_type, _args) do
     children = [
       # Starts a worker by calling: Airflow.Worker.start_link(arg)
-      # {Airflow.Worker, arg}
+      # {Airflow.Reader, "ttyUSB4"}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

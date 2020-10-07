@@ -8,6 +8,8 @@ defmodule Airflow.Reader do
 
   alias Airflow.Parser
 
+  @address "a"
+
   def start_link(serial_number) do
     GenServer.start_link(__MODULE__, %{port_serial: serial_number, result: 0}, name: __MODULE__)
   end
@@ -18,13 +20,17 @@ defmodule Airflow.Reader do
     {port, _} = Circuits.UART.enumerate
                 |> find_port(serial_number)
 
-    Circuits.UART.open(pid, port, speed: 19200, framing: {Circuits.UART.Framing.Line, separator: "\n"})
+    Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+
+    # make sure streaming mode is off
+    Circuits.UART.write(pid, "@@=#{@address}")
+
+    # Set streaming intervale to 500 ms
+    # Circuits.UART.write(pid, "#{@address}w91=500")
+    ## Set to streaming mode
+    # Circuits.UART.write(pid, "#{@address}@=@")
+    Process.send_after(self(), :read, 1_000)
     {:ok, %{uart: pid, port: port}}
-  end
-
-
-  def command(cmd) do
-    GenServer.call(__MODULE__, {:cmd, cmd})
   end
 
   @doc """
@@ -44,8 +50,9 @@ defmodule Airflow.Reader do
   end
 
   def process_data(data, pid) do
-    result = Parser.parse(data)
-    Process.send(pid, {:parser, result}, [])
+    IO.inspect data
+    # result = Parser.parse(data)
+    # Process.send(pid, {:parser, result}, [])
   end
 
   def port, do: GenServer.call(__MODULE__, :port)
@@ -60,12 +67,6 @@ defmodule Airflow.Reader do
     {:reply, port, state}
   end
 
-  def handle_call({:cmd, cmd}, _from, %{port: port} = state) do
-    Circuits.UART.write(port, cmd)
-    result = Circuits.UART.read(port)
-    {:reply, result, state}
-  end
-
   def handle_info({:circuits_uart, port, data}, state) do
     if port == state[:port] do
       Task.start(__MODULE__, :process_data, [data, self()])
@@ -76,5 +77,11 @@ defmodule Airflow.Reader do
   def handle_info({:parser, result}, state) do
     # Task.start(Airflow.Logger, :save, [result])
     {:noreply, Map.put(state, :result, result)}
+  end
+
+  def handle_info(:read, state) do
+    Circuits.UART.write(state[:uart], @address)
+    Process.send_after(self(), :read, 1_000)
+    {:noreply, state}
   end
 end
