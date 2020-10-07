@@ -50,6 +50,7 @@ defmodule Airflow.Reader do
   end
 
   def process_data(data, pid) do
+
     IO.inspect data
     # result = Parser.parse(data)
     # Process.send(pid, {:parser, result}, [])
