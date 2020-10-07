@@ -1,18 +1,4 @@
 defmodule Airflow do
-  @moduledoc """
-  Documentation for `Airflow`.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Airflow.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  defstruct pressure: 0, temperature: 0, volumetric_flow: 0, mass_flow: 0,
+    setpoint: 0, gas: ""
 end
