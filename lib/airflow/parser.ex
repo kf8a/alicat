@@ -5,7 +5,8 @@ defmodule Airflow.Parser do
     Process.send(pid, {:parser, result}, [])
   end
 
-  def process_data(_x, _pid), do:
+  def process_data(_x, _pid) do
+  end
 
   def parse(string) do
     [_address, pressure, temperature, volumetric_flow, mass_flow, setpoint, gas] = String.split(string)
