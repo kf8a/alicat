@@ -1,11 +1,14 @@
 defmodule Airflow.Parser do
 
+  require Logger
+
   def process_data(string, pid) when is_binary(string) do
     result = parse(string)
     Process.send(pid, {:parser, result}, [])
   end
 
-  def process_data(_x, _pid) do
+  def process_data(x, _pid) do
+    Logger.error "parse error: #{x}"
   end
 
   def parse(string) do
