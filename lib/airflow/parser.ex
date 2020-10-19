@@ -7,8 +7,8 @@ defmodule Airflow.Parser do
     Process.send(pid, {:parser, result}, [])
   end
 
-  def process_data(x, _pid) do
-    Logger.error "parse error: #{x}"
+  def process_data(msg, _pid) do
+    Logger.error "parse error: #{inspect msg}"
   end
 
   def parse(string) do

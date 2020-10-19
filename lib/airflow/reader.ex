@@ -63,7 +63,8 @@ defmodule Airflow.Reader do
 
   def handle_info({:circuits_uart, port, data}, state) do
     if port == state[:port] do
-      Task.start(Parser, :process_data, [data, self()])
+      spawn(fn -> Parser.process_data(data, self()) end)
+      # Task.start(Parser, :process_data, [data, self()])
     end
     {:noreply, state}
   end
