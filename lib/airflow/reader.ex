@@ -61,6 +61,13 @@ defmodule Airflow.Reader do
     {:reply, port, state}
   end
 
+  def handle_info({:circuits_uart, port, {:error, msg}}, {uart: pid} = state) do
+    Logger.error "resetting port: #{inspect msg}"
+    Circuits.UART.close(pid)
+    timer.sleep(50)
+    Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+  end
+
   def handle_info({:circuits_uart, port, data}, state) do
     if port == state[:port] do
       spawn(fn -> Parser.process_data(data, self()) end)
