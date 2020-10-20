@@ -45,7 +45,7 @@ defmodule Airflow.Reader do
     number ==  serial
   end
 
-  defp correct_port?(%{}, serial) do
+  defp correct_port?(%{}, _serial) do
     false
   end
 
@@ -61,11 +61,10 @@ defmodule Airflow.Reader do
     {:reply, port, state}
   end
 
-  def handle_info({:circuits_uart, port, {:error, msg}}, {uart: pid} = state) do
+  def handle_info({:circuits_uart, _port, {:error, msg}}, state) do
     Logger.error "resetting port: #{inspect msg}"
-    Circuits.UART.close(pid)
-    timer.sleep(50)
-    Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+    Circuits.UART.close(state[:uart])
+    Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
   end
 
   def handle_info({:circuits_uart, port, data}, state) do
