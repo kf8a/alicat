@@ -65,6 +65,7 @@ defmodule Airflow.Reader do
     Logger.error "resetting port: #{inspect msg}"
     Circuits.UART.close(state[:uart])
     Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+    {:noreply, state}
   end
 
   def handle_info({:circuits_uart, port, data}, state) do
