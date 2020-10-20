@@ -30,7 +30,7 @@ defmodule Airflow.Reader do
     ## Set to streaming mode
     # Circuits.UART.write(pid, "#{@address}@=@")
     Process.send_after(self(), :read, 1_000)
-    {:ok, %{uart: pid, port: port}}
+    {:ok, %{uart: pid, port: port, result: %Airflow{}}}
   end
 
   @doc """
@@ -55,10 +55,6 @@ defmodule Airflow.Reader do
 
   def handle_call(:current_value, _from, %{result: result} = state) do
     {:reply, result, state}
-  end
-
-  def handle_call(:current_value, _from, state) do
-    {:reply, %Airflow{}, state}
   end
 
   def handle_call(:port, _from, %{port: port} = state) do
