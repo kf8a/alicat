@@ -57,6 +57,10 @@ defmodule Airflow.Reader do
     {:reply, result, state}
   end
 
+  def handle_call(:current_value, _from, state) do
+    {:reply, 0, state}
+  end
+
   def handle_call(:port, _from, %{port: port} = state) do
     {:reply, port, state}
   end
