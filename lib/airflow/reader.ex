@@ -11,7 +11,7 @@ defmodule Airflow.Reader do
   @address "a"
 
   def start_link(serial_number) do
-    GenServer.start_link(__MODULE__, %{port_serial: serial_number}, name: __MODULE__)
+    GenServer.start_link(__MODULE__, %{port_serial: serial_number, result: %Airflow{}}, name: __MODULE__)
   end
 
   def init(%{port_serial: serial_number}) do
