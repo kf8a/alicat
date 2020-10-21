@@ -3,7 +3,21 @@
 Connects to and reads an Alicat Gas flow controller
 (https://documents.alicat.com/manuals/DOC-MANUAL-MC.pdf)
 
-The application needs either a serial port or serial port id passed in
+The application needs either a serial port or serial port id passed in. It assumes that the communication settings for the Alicat controller are set to 9600, 8,1,N.
+
+## Usage
+
+Start a reader instance
+
+```elixir
+{:ok, pid} = Airflow.Reader.start_link(”FS1243”)
+```
+
+Then retrieve the current value
+
+```elixir
+value = Airflow.Reader.current_value
+```
 
 ## Installation
 
