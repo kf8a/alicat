@@ -61,12 +61,23 @@ defmodule Airflow.Reader do
     {:reply, port, state}
   end
 
+
+  def handle_info(:reconnect, state) do
+    :ok = Circuits.UART.close(state[:uart])
+    case Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"}) do
+      :ok ->
+        :ok = Circuits.UART.write(state[:uart], "@@=#{@address}")
+      {:error, msg} ->
+        Logger.error "reconnect :#{inspect msg}"
+        Process.send_after(self(), :reconnect, 500)
+    end
+    {:noreply, state}
+  end
+
   def handle_info({:circuits_uart, port, {:error, msg}}, state) do
     Logger.error "resetting port: #{inspect msg}"
     if port == state[:port] do
-     :ok = Circuits.UART.close(state[:uart])
-     :ok = Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
-     :ok = Circuits.UART.write(state[:uart], "@@=#{@address}")
+      Process.send_after(self(), :reconnect, 100)
     end
     {:noreply, state}
   end
@@ -85,7 +96,7 @@ defmodule Airflow.Reader do
 
   def handle_info(:read, state) do
     :ok = Circuits.UART.write(state[:uart], @address)
-    Process.send_after(self(), :read, 1_000)
+    Process.send_after(self(), :read, 2_000)
     {:noreply, state}
   end
 end
