@@ -20,10 +20,10 @@ defmodule Airflow.Reader do
     {port, _} = Circuits.UART.enumerate
                 |> find_port(serial_number)
 
-    Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+   :ok = Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
 
     # make sure streaming mode is off
-    Circuits.UART.write(pid, "@@=#{@address}")
+    :ok = Circuits.UART.write(pid, "@@=#{@address}")
 
     # Set streaming intervale to 500 ms
     # Circuits.UART.write(pid, "#{@address}w91=500")
@@ -61,10 +61,13 @@ defmodule Airflow.Reader do
     {:reply, port, state}
   end
 
-  def handle_info({:circuits_uart, _port, {:error, msg}}, state) do
+  def handle_info({:circuits_uart, port, {:error, msg}}, state) do
     Logger.error "resetting port: #{inspect msg}"
-    Circuits.UART.close(state[:uart])
-    Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+    if port == state[:port] do
+     :ok = Circuits.UART.close(state[:uart])
+     :ok = Circuits.UART.open(state[:uart], state[:port], speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
+     :ok = Circuits.UART.write(state[:uart], "@@=#{@address}")
+    end
     {:noreply, state}
   end
 
@@ -81,7 +84,7 @@ defmodule Airflow.Reader do
   end
 
   def handle_info(:read, state) do
-    Circuits.UART.write(state[:uart], @address)
+    :ok = Circuits.UART.write(state[:uart], @address)
     Process.send_after(self(), :read, 1_000)
     {:noreply, state}
   end
