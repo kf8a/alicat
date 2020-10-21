@@ -1,9 +1,9 @@
 # Airflow
 
-Connects to and reads an Alicat Gas flow controller
+Connects to and reads data from an Alicat Gas flow controller
 (https://documents.alicat.com/manuals/DOC-MANUAL-MC.pdf)
 
-The application needs either a serial port or serial port id passed in. It assumes that the communication settings for the Alicat controller are set to 9600, 8,1,N.
+The application needs either a serial port or serial port seria number (useful for USB serial adapters) passed in. It assumes that the communication settings for the Alicat controller are set to 9600, 8,1,N.
 
 ## Usage
 
