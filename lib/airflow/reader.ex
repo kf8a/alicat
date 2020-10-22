@@ -95,7 +95,7 @@ defmodule Airflow.Reader do
   end
 
   def handle_info(:read, state) do
-    :ok = Circuits.UART.write(state[:uart], @address)
+    Circuits.UART.write(state[:uart], @address)
     Process.send_after(self(), :read, 2_000)
     {:noreply, state}
   end
