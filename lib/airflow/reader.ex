@@ -17,8 +17,8 @@ defmodule Airflow.Reader do
   def init(%{port_serial: serial_number}) do
     {:ok, pid} = Circuits.UART.start_link
 
-    whith ports <- Circuits.UART.enumerate,
-      find_port(ports, serial_number) do
+    with ports <- Circuits.UART.enumerate,
+      {port, _} = find_port(ports, serial_number) do
 
         case Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"}) do
           :ok ->
