@@ -17,20 +17,19 @@ defmodule Airflow.Reader do
   def init(%{port_serial: serial_number}) do
     {:ok, pid} = Circuits.UART.start_link
 
-    with ports <- Circuits.UART.enumerate,
-      {port, _} = find_port(ports, serial_number) do
+    ports = Circuits.UART.enumerate
 
-        case Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"}) do
-          :ok ->
+    case find_port(ports, serial_number) do
+      {port, _} ->
+        :ok = Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"})
         # make sure streaming mode is off
-            :ok = Circuits.UART.write(pid, "@@=#{@address}")
-            Process.send_after(self(), :read, 1_000)
-            {:ok, %{uart: pid, port: port, result: %Airflow{}}}
-          _ ->
-            Logger.error "Alicat: No valid port found"
-            {:ok, %{uart: pid, port: nil, result: %Airflow{}}}
-        end
-      end
+        :ok = Circuits.UART.write(pid, "@@=#{@address}")
+        Process.send_after(self(), :read, 1_000)
+        {:ok, %{uart: pid, port: port, result: %Airflow{}}}
+      _ ->
+        Logger.error "Alicat: No valid port found. Looking for #{serial_number}"
+        {:ok, %{uart: pid, port: nil, result: %Airflow{}}}
+    end
   end
 
   @doc """
@@ -38,7 +37,7 @@ defmodule Airflow.Reader do
   given a serial number
   """
   def find_port(ports, serial_number) do
-    Enum.find(ports, {"AIRFLOW", nil}, fn({_port, value}) -> correct_port?(value, serial_number) end)
+    Enum.find(ports, fn({_port, value}) -> correct_port?(value, serial_number) end)
   end
 
   defp correct_port?(%{serial_number: number}, serial) do
