@@ -17,19 +17,20 @@ defmodule Airflow.Reader do
   def init(%{port_serial: serial_number}) do
     {:ok, pid} = Circuits.UART.start_link
 
-    {port, _} = Circuits.UART.enumerate
-                |> find_port(serial_number)
+    whith ports <- Circuits.UART.enumerate,
+      find_port(ports, serial_number) do
 
-    case Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"}) do
-      :ok ->
+        case Circuits.UART.open(pid, port, speed: 9600, framing: {Circuits.UART.Framing.Line, separator: "\r"}) do
+          :ok ->
         # make sure streaming mode is off
-        :ok = Circuits.UART.write(pid, "@@=#{@address}")
-        Process.send_after(self(), :read, 1_000)
-      _ ->
-        Logger.error "Alicat: No valid port found"
-        :error
-    end
-    {:ok, %{uart: pid, port: port, result: %Airflow{}}}
+            :ok = Circuits.UART.write(pid, "@@=#{@address}")
+            Process.send_after(self(), :read, 1_000)
+            {:ok, %{uart: pid, port: port, result: %Airflow{}}}
+          _ ->
+            Logger.error "Alicat: No valid port found"
+            {:ok, %{uart: pid, port: nil, result: %Airflow{}}}
+        end
+      end
   end
 
   @doc """
