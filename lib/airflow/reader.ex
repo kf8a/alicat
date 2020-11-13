@@ -38,7 +38,7 @@ defmodule Airflow.Reader do
   given a serial number
   """
   def find_port(ports, serial_number) do
-    Enum.find(ports, fn({_port, value}) -> correct_port?(value, serial_number) end)
+    Enum.find(ports, {"AIRFLOW", nil}, fn({_port, value}) -> correct_port?(value, serial_number) end)
   end
 
   defp correct_port?(%{serial_number: number}, serial) do
