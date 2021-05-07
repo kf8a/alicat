@@ -23,10 +23,10 @@ defmodule Airflow.Parser do
 
   defp to_float(string) do
     case Float.parse(string) do
-      {:ok, value} ->
+      {value, _} ->
         value
-      {:error, msg} ->
-        Logger.info "unable to parse #{inspect msg}"
+      error ->
+        Logger.info "unable to parse #{inspect string}"
         0
     end
   end
